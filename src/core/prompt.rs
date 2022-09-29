@@ -5,6 +5,8 @@ use state::editor::{Buffer, BufferManager, Editor};
 
 use std::process::exit;
 
+use crate::terminal::{term::Terminal, terminal_command::TerminalCommand};
+
 /// Prompt mode commands.
 pub enum PromptCommand<'a> {
     /// Set an option.
@@ -48,6 +50,13 @@ pub enum PromptCommand<'a> {
         /// The index of the buffer to switch to.
         buffer_index: usize,
     },
+    /// Starts the terminal
+    Term,
+    /// Runs a command
+    Run {
+        /// Command you want to be ran
+        command_string: &'a str,
+    },
     /// Display help in a new buffer.
     Help,
     /// Exit Sodium.
@@ -74,6 +83,10 @@ impl<'a> PromptCommand<'a> {
             "ls" => ListBuffers,
             "bn" => CreateBuffer,
             "bd" => DeleteBuffer,
+            "term" | "terminal" => Term,
+            "run" => Run {
+                command_string: sec_cmd,
+            },
             "h" | "help" => Help,
             "q" | "quit" => Quit,
             bn if bn.starts_with('b') => {
@@ -180,6 +193,33 @@ impl Editor {
                 let ix = self.buffers.current_buffer_index();
                 self.buffers.delete_buffer(ix);
                 self.redraw_task = RedrawTask::Full;
+            }
+            Term => {}
+            Run { command_string } => {
+                if self.terminal.is_none() {
+                    let mut term = Terminal::new();
+                    match term.spawn_command(&mut TerminalCommand::new(command_string).unwrap()) {
+                        Ok(_) => {}
+                        Err(e) => {
+                            println!("{}", e)
+                        }
+                    }
+                    for i in term.output {
+                        println!("{}", i);
+                    }
+                } else {
+                    match self
+                        .terminal
+                        .as_mut()
+                        .unwrap()
+                        .spawn_command(&mut TerminalCommand::new(command_string).unwrap())
+                    {
+                        Ok(_) => {}
+                        Err(e) => {
+                            println!("{}", e)
+                        }
+                    }
+                }
             }
             Help => {
                 self.open("/apps/sodium/help.txt");

@@ -9,11 +9,11 @@ use state::options::Options;
 use std::slice::Iter;
 
 #[cfg(feature = "orbital")]
-use orbclient::Window;
-#[cfg(feature = "orbital")]
-use orbclient::WindowFlag;
+use orbclient::{Window, WindowFlag};
 
 use std::env::args;
+
+use crate::terminal::term::Terminal;
 
 const HELP: &str = include_str!("../../help.txt");
 
@@ -186,6 +186,8 @@ pub struct Editor {
     pub window: Window,
     /// The status bar
     pub status_bar: StatusBar,
+    /// terminal
+    pub terminal: Option<Terminal>,
     /// The prompt
     pub prompt: Vec<String>,
     /// The prompt index, usually 0
@@ -218,6 +220,7 @@ impl Editor {
             buffers: BufferManager::new(),
             window,
             status_bar: StatusBar::new(),
+            terminal: None,
             prompt: vec![String::new()],
             prompt_index: 0,
             options: Options::new(),

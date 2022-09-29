@@ -18,6 +18,8 @@ pub mod edit;
 pub mod io;
 /// State of the editor.
 pub mod state;
+/// Terminal module
+pub mod terminal;
 
 fn main() {
     self::state::editor::Editor::init();
